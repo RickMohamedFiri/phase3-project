@@ -1,11 +1,10 @@
 # main.py
 
 import argparse
-import random
-from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, WeatherEntry
+from datetime import datetime
 
 engine = create_engine('sqlite:///weather.db')
 Session = sessionmaker(bind=engine)
@@ -14,28 +13,30 @@ def create_database():
     Base.metadata.create_all(engine)
     print("Database created.")
 
+from datetime import time  # Add this import
+
+# ...
+
 def populate_database():
     session = Session()
-    towns = ["Nairobi", "Mombasa", "Kisumu", "Eldoret", "Nakuru", "Meru", "Thika", "Kakamega", "Kericho", "Malindi"]
-    
-    # Generate random weather data for each town
-    for town in towns:
-        date = datetime(2023, 8, 1)
-        end_date = datetime(2023, 8, 31)
-        
-        while date <= end_date:
-            time = date.strftime("%H:%M:%S")
-            temperature = random.randint(15, 35)  # Random temperature between 15°C and 35°C
-            cloud_cover = random.choice(["Clear", "Partly Cloudy", "Cloudy", "Rainy"])
-            
-            entry = WeatherEntry(town=town, date=date.strftime("%Y-%m-%d"), time=time,
-                                 temperature=temperature, cloud_cover=cloud_cover)
-            session.add(entry)
-            
-            date += timedelta(hours=2)  # Increment date by 2 hours
-        
+    data = [
+        {
+            "town": "Nairobi",
+            "date": datetime(2023, 8, 1),
+            "time": time(0, 0, 0),  # Use a Python time object
+            "temperature": 23.6,
+            "cloud_cover": "Windy",
+        }
+        # Add more data as needed
+    ]
+
+    for entry_data in data:
+        entry = WeatherEntry(**entry_data)
+        session.add(entry)
+
     session.commit()
     print("Weather data populated.")
+
 
 def list_weather_entries(town, date):
     session = Session()
@@ -44,7 +45,7 @@ def list_weather_entries(town, date):
     if entries:
         print(f"Weather data for {town} on {date}:")
         for entry in entries:
-            print(f"Time: {entry.time}, Temperature: {entry.temperature}, Cloud Cover: {entry.cloud_cover}")
+            print(f"Time: {entry.time.strftime('%H:%M:%S')}, Temperature: {entry.temperature}, Cloud Cover: {entry.cloud_cover}")
     else:
         print(f"No weather data found for {town} on {date}.")
 
